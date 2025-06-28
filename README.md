@@ -22,12 +22,16 @@ The Miyoo Mini Plus has specific video format requirements due to its limited AR
 ## Installation
 
 1. Clone this repository:
-   ```bash
-   git clone https://github.com/yourusername/miyoo-video-converter.git
-   cd miyoo-video-converter
-  ```
-2. Make the script executable (Linux/macOS):
 
+```bash
+git clone https://github.com/yourusername/miyoo-video-converter.git
+cd miyoo-video-converter
+```
+
+2. Make the script executable (Linux/macOS):
+```bash
+chmod +x convert_for_miyoo.sh
+```
 ## Usage
 Basic Conversion
 ```bash
