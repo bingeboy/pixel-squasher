@@ -45,8 +45,8 @@ Creates converted_input_video.mp4 in the same directory.
 bash./convert_for_miyoo.sh input_video.mp4 my_movie.mp4
 ```
 ## Batch Conversion
-```bash
 Convert all MP4 files in a directory
+```bash
 for file in /path/to/videos/*.mp4; do
     ./convert_for_miyoo.sh "$file"
 done
