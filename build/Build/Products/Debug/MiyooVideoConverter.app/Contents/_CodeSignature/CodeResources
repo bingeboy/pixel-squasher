@@ -3,9 +3,22 @@
 <plist version="1.0">
 <dict>
 	<key>files</key>
-	<dict/>
+	<dict>
+		<key>Resources/ffmpeg</key>
+		<data>
+		1LfJESepWT94luLdy1HBJI+P2j0=
+		</data>
+	</dict>
 	<key>files2</key>
-	<dict/>
+	<dict>
+		<key>Resources/ffmpeg</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			693ck29h4UBJotS1SaQSuKQN7v9lQOWKnyotqeaxiJQ=
+			</data>
+		</dict>
+	</dict>
 	<key>rules</key>
 	<dict>
 		<key>^Resources/</key>

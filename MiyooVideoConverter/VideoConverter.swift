@@ -123,7 +123,7 @@ class VideoConverter: ObservableObject {
         
         // Write debug info to a file we can check
         let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let debugLogPath = documentsPath.appendingPathComponent("miyoo_debug.log").path
+        let debugLogPath = documentsPath.appendingPathComponent("pixelsquasher_debug.log").path
         let debugInfo = "=== CONVERSION START ===\nInput: \(inputFile.path)\nOutput: \(outputURL.path)\nTime: \(Date())\n"
         do {
             try debugInfo.write(toFile: debugLogPath, atomically: true, encoding: .utf8)
@@ -142,7 +142,7 @@ class VideoConverter: ObservableObject {
             }
             // Log the error
             let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            let debugLogPath = documentsPath.appendingPathComponent("miyoo_debug.log").path
+            let debugLogPath = documentsPath.appendingPathComponent("pixelsquasher_debug.log").path
             try? "\(errorMsg)\n".appendToFile(atPath: debugLogPath)
             return
         }
@@ -159,7 +159,7 @@ class VideoConverter: ObservableObject {
             }
             // Log the error
             let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            let debugLogPath = documentsPath.appendingPathComponent("miyoo_debug.log").path
+            let debugLogPath = documentsPath.appendingPathComponent("pixelsquasher_debug.log").path
             try? "\(errorMsg)\n".appendToFile(atPath: debugLogPath)
             return
         }
@@ -374,7 +374,7 @@ class VideoConverter: ObservableObject {
             
             """
             let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            let debugLogPath = documentsPath.appendingPathComponent("miyoo_debug.log").path
+            let debugLogPath = documentsPath.appendingPathComponent("pixelsquasher_debug.log").path
             try? debugResult.appendToFile(atPath: debugLogPath)
             
             if process.terminationStatus == 0 {
@@ -409,6 +409,13 @@ class VideoConverter: ObservableObject {
     }
     
     private func findFFmpegPath() -> String {
+        // First try to use bundled FFmpeg by copying it to a writable location
+        if let bundledFFmpeg = getBundledFFmpegPath() {
+            print("DEBUG: Using bundled FFmpeg at: \(bundledFFmpeg)")
+            return bundledFFmpeg
+        }
+        
+        // Fallback to system FFmpeg
         let possiblePaths = [
             "/usr/local/bin/ffmpeg",
             "/opt/homebrew/bin/ffmpeg",
@@ -418,6 +425,7 @@ class VideoConverter: ObservableObject {
         
         for path in possiblePaths {
             if FileManager.default.fileExists(atPath: path) {
+                print("DEBUG: Using system FFmpeg at: \(path)")
                 return path
             }
         }
@@ -436,7 +444,9 @@ class VideoConverter: ObservableObject {
             if process.terminationStatus == 0 {
                 let data = pipe.fileHandleForReading.readDataToEndOfFile()
                 if let output = String(data: data, encoding: .utf8) {
-                    return output.trimmingCharacters(in: .whitespacesAndNewlines)
+                    let path = output.trimmingCharacters(in: .whitespacesAndNewlines)
+                    print("DEBUG: Found FFmpeg via which: \(path)")
+                    return path
                 }
             }
         } catch {
@@ -444,6 +454,60 @@ class VideoConverter: ObservableObject {
         }
         
         return ""
+    }
+    
+    private func getBundledFFmpegPath() -> String? {
+        // Check if we have a bundled FFmpeg in Resources folder
+        let resourcesPath = Bundle.main.resourcePath ?? ""
+        let bundledFFmpegPath = "\(resourcesPath)/ffmpeg"
+        
+        guard FileManager.default.fileExists(atPath: bundledFFmpegPath) else {
+            print("DEBUG: No bundled FFmpeg found at: \(bundledFFmpegPath)")
+            return nil
+        }
+        
+        // Copy FFmpeg to a writable location in Application Support
+        let appSupportDir = FileManager.default.urls(for: .applicationSupportDirectory, 
+                                                     in: .userDomainMask)[0]
+        let appDir = appSupportDir.appendingPathComponent("PixelSquasher")
+        let workingFFmpegPath = appDir.appendingPathComponent("ffmpeg")
+        
+        do {
+            // Create app directory if it doesn't exist
+            try FileManager.default.createDirectory(at: appDir, 
+                                                   withIntermediateDirectories: true, 
+                                                   attributes: nil)
+            
+            // Check if we already have a working copy and it's newer or same as bundled
+            if FileManager.default.fileExists(atPath: workingFFmpegPath.path) {
+                let bundledDate = try FileManager.default.attributesOfItem(atPath: bundledFFmpegPath)[.modificationDate] as? Date
+                let workingDate = try FileManager.default.attributesOfItem(atPath: workingFFmpegPath.path)[.modificationDate] as? Date
+                
+                if let bundled = bundledDate, let working = workingDate, working >= bundled {
+                    print("DEBUG: Using existing FFmpeg copy at: \(workingFFmpegPath.path)")
+                    return workingFFmpegPath.path
+                }
+            }
+            
+            // Copy bundled FFmpeg to working location
+            if FileManager.default.fileExists(atPath: workingFFmpegPath.path) {
+                try FileManager.default.removeItem(at: workingFFmpegPath)
+            }
+            
+            try FileManager.default.copyItem(atPath: bundledFFmpegPath, 
+                                           toPath: workingFFmpegPath.path)
+            
+            // Make it executable
+            try FileManager.default.setAttributes([.posixPermissions: 0o755], 
+                                                ofItemAtPath: workingFFmpegPath.path)
+            
+            print("DEBUG: Copied bundled FFmpeg to: \(workingFFmpegPath.path)")
+            return workingFFmpegPath.path
+            
+        } catch {
+            print("DEBUG: Failed to copy bundled FFmpeg: \(error)")
+            return nil
+        }
     }
     
     func cancelConversion() {
@@ -488,7 +552,7 @@ class VideoConverter: ObservableObject {
                 
                 // Log progress update
                 let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-                let debugLogPath = documentsPath.appendingPathComponent("miyoo_debug.log").path
+                let debugLogPath = documentsPath.appendingPathComponent("pixelsquasher_debug.log").path
                 let logEntry = "[\(Date())] UI Progress: \(Int(self.progress * 100))% overall, \(Int(progressPercent * 100))% current file\n"
                 try? logEntry.appendToFile(atPath: debugLogPath)
             }

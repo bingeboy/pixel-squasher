@@ -4,11 +4,11 @@
     "Localizable": [
       {
         "comment": "",
-        "key": "Miyoo Mini Plus Video Converter"
+        "key": "PixelSquasher"
       },
       {
         "comment": "",
-        "key": "Convert videos for optimal playback on Miyoo Mini Plus"
+        "key": "handheld transcoder"
       },
       {
         "comment": "",
@@ -108,6 +108,14 @@
       },
       {
         "comment": "",
+        "key": "Hide Log"
+      },
+      {
+        "comment": "",
+        "key": "Show Log"
+      },
+      {
+        "comment": "",
         "key": "No files converted yet"
       },
       {
@@ -116,7 +124,23 @@
       },
       {
         "comment": "",
-        "key": "Conversion Log:"
+        "key": "Conversion Log"
+      },
+      {
+        "comment": "",
+        "key": "Copy log to clipboard"
+      },
+      {
+        "comment": "",
+        "key": "Clear log"
+      },
+      {
+        "comment": "",
+        "key": "Close log"
+      },
+      {
+        "comment": "",
+        "key": "No log data yet..."
       },
       {
         "comment": "",

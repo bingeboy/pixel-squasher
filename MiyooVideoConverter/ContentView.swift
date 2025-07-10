@@ -7,15 +7,16 @@ struct ContentView: View {
     @State private var selectedFiles: [URL] = []
     @State private var isDragging = false
     @State private var destinationFolder: URL?
+    @State private var showLogTray = false
     
     var body: some View {
         VStack(spacing: 20) {
-            Text("Miyoo Mini Plus Video Converter")
+            Text("PixelSquasher")
                 .font(.title)
                 .fontWeight(.bold)
                 .padding(.top)
             
-            Text("Convert videos for optimal playback on Miyoo Mini Plus")
+            Text("handheld transcoder")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
             
@@ -284,76 +285,77 @@ struct ContentView: View {
             .background(Color(NSColor.controlBackgroundColor))
             .cornerRadius(8)
             
-            HStack(spacing: 20) {
-                // Left side - Converted Files
-                VStack(alignment: .leading, spacing: 10) {
+            // Converted Files - now full width
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
                     Text("Converted Files (\(converter.convertedFiles.count)):")
                         .font(.headline)
                     
-                    ScrollView {
-                        LazyVStack(alignment: .leading, spacing: 5) {
-                            if converter.convertedFiles.isEmpty {
-                                Text("No files converted yet")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                    .padding()
-                            } else {
-                                ForEach(converter.convertedFiles, id: \.self) { file in
-                                    HStack {
-                                        Text(file.lastPathComponent)
-                                            .font(.caption)
-                                        Spacer()
-                                        Button("Show in Finder") {
-                                            NSWorkspace.shared.selectFile(file.path, inFileViewerRootedAtPath: "")
-                                        }
-                                        .buttonStyle(.borderless)
+                    Spacer()
+                    
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            showLogTray.toggle()
+                        }
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: showLogTray ? "sidebar.right" : "sidebar.left")
+                            Text(showLogTray ? "Hide Log" : "Show Log")
+                        }
+                        .font(.caption)
+                    }
+                    .buttonStyle(.bordered)
+                }
+                
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 5) {
+                        if converter.convertedFiles.isEmpty {
+                            Text("No files converted yet")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .padding()
+                        } else {
+                            ForEach(converter.convertedFiles, id: \.self) { file in
+                                HStack {
+                                    Text(file.lastPathComponent)
                                         .font(.caption)
+                                    Spacer()
+                                    Button("Show in Finder") {
+                                        NSWorkspace.shared.selectFile(file.path, inFileViewerRootedAtPath: "")
                                     }
+                                    .buttonStyle(.borderless)
+                                    .font(.caption)
                                 }
                             }
                         }
                     }
-                    .frame(maxHeight: 120)
                 }
-                .padding()
-                .background(Color(NSColor.controlBackgroundColor))
-                .cornerRadius(8)
-                .frame(maxWidth: .infinity)
-                
-                // Right side - Log Window
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Conversion Log:")
-                        .font(.headline)
-                    
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 4) {
-                            LogView()
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    .frame(maxHeight: 200)
-                    .padding(8)
-                    .background(Color.black.opacity(0.05))
-                    .cornerRadius(6)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 6)
-                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                    )
-                }
-                .padding()
-                .background(Color(NSColor.controlBackgroundColor))
-                .cornerRadius(8)
-                .frame(maxWidth: .infinity)
+                .frame(maxHeight: 120)
             }
+            .padding()
+            .background(Color(NSColor.controlBackgroundColor))
+            .cornerRadius(8)
             
             Spacer()
         }
         .padding()
-        .frame(minWidth: 900, maxWidth: 1200, minHeight: 700, maxHeight: 1000)
+        .frame(minWidth: 900, maxWidth: showLogTray ? 1400 : 1200, minHeight: 700, maxHeight: 1000)
+        .overlay(
+            // Log Tray
+            HStack {
+                Spacer()
+                if showLogTray {
+                    LogTrayView(showLogTray: $showLogTray)
+                        .frame(width: 350)
+                        .transition(.move(edge: .trailing))
+                }
+            },
+            alignment: .trailing
+        )
         .onAppear {
             print("DEBUG: ContentView appeared")
             let debugMsg = "DEBUG: ContentView appeared at \(Date())\n"
-            try? debugMsg.write(to: URL(fileURLWithPath: "/tmp/miyoo_ui_debug.log"), atomically: false, encoding: .utf8)
+            try? debugMsg.write(to: URL(fileURLWithPath: "/tmp/pixelsquasher_ui_debug.log"), atomically: false, encoding: .utf8)
         }
     }
     
@@ -386,7 +388,7 @@ struct ContentView: View {
         print("DEBUG: UI convertVideos button clicked with \(selectedFiles.count) files")
         let debugMsg = "DEBUG: UI convertVideos button clicked with \(selectedFiles.count) files at \(Date())\n"
         if let data = debugMsg.data(using: .utf8) {
-            let url = URL(fileURLWithPath: "/tmp/miyoo_ui_debug.log")
+            let url = URL(fileURLWithPath: "/tmp/pixelsquasher_ui_debug.log")
             if FileManager.default.fileExists(atPath: url.path) {
                 if let fileHandle = try? FileHandle(forWritingTo: url) {
                     fileHandle.seekToEndOfFile()
@@ -412,49 +414,154 @@ struct ContentView: View {
     }
 }
 
-struct LogView: View {
+struct LogTrayView: View {
+    @Binding var showLogTray: Bool
     @State private var logContent = ""
     @State private var timer: Timer?
+    @State private var isAtBottom = true
     
     var body: some View {
-        Text(logContent.isEmpty ? "No log data yet..." : logContent)
-            .font(.system(.caption, design: .monospaced))
-            .foregroundColor(.primary)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .onAppear {
-                startLogMonitoring()
+        VStack(alignment: .leading, spacing: 0) {
+            // Header
+            HStack {
+                Text("Conversion Log")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                
+                Spacer()
+                
+                Button(action: {
+                    let pasteboard = NSPasteboard.general
+                    pasteboard.clearContents()
+                    pasteboard.setString(logContent, forType: .string)
+                }) {
+                    Image(systemName: "doc.on.doc")
+                        .font(.body)
+                        .foregroundColor(.blue)
+                }
+                .buttonStyle(.bordered)
+                .help("Copy log to clipboard")
+                
+                Button(action: {
+                    logContent = ""
+                }) {
+                    Image(systemName: "trash")
+                        .font(.body)
+                        .foregroundColor(.red)
+                }
+                .buttonStyle(.bordered)
+                .help("Clear log")
+                
+                Button(action: {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        showLogTray.toggle()
+                    }
+                }) {
+                    Image(systemName: "xmark")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(.bordered)
+                .help("Close log")
             }
-            .onDisappear {
-                timer?.invalidate()
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(Color(NSColor.controlBackgroundColor))
+            
+            Divider()
+            
+            // Log content
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 2) {
+                        if logContent.isEmpty {
+                            Text("No log data yet...")
+                                .font(.system(.caption, design: .monospaced))
+                                .foregroundColor(.secondary)
+                                .padding()
+                        } else {
+                            ForEach(logContent.components(separatedBy: "\n").indices, id: \.self) { index in
+                                let line = logContent.components(separatedBy: "\n")[index]
+                                if !line.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                    Text(line)
+                                        .font(.system(.caption, design: .monospaced))
+                                        .foregroundColor(colorForLogLine(line))
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(.horizontal, 8)
+                                        .id(index)
+                                }
+                            }
+                        }
+                    }
+                }
+                .onChange(of: logContent) { _ in
+                    if isAtBottom {
+                        withAnimation(.easeOut(duration: 0.3)) {
+                            let lines = logContent.components(separatedBy: "\n")
+                            if !lines.isEmpty {
+                                proxy.scrollTo(lines.count - 1, anchor: .bottom)
+                            }
+                        }
+                    }
+                }
             }
+            .background(Color.black.opacity(0.05))
+        }
+        .background(Color(NSColor.windowBackgroundColor))
+        .cornerRadius(8)
+        .shadow(color: .black.opacity(0.1), radius: 5, x: -2, y: 0)
+        .onAppear {
+            startLogMonitoring()
+        }
+        .onDisappear {
+            timer?.invalidate()
+        }
+    }
+    
+    private func colorForLogLine(_ line: String) -> Color {
+        if line.contains("ERROR") || line.contains("Failed") {
+            return .red
+        } else if line.contains("Progress:") || line.contains("Duration parsed:") {
+            return .blue
+        } else if line.contains("UI Events") || line.contains("Conversion Log") {
+            return .primary
+        } else if line.contains("FFmpeg:") {
+            return .secondary
+        } else {
+            return .primary
+        }
     }
     
     private func startLogMonitoring() {
-        // Check both UI debug log and conversion debug log
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             var combinedLog = ""
             
             // Read UI debug log
-            if let uiLog = try? String(contentsOfFile: "/tmp/miyoo_ui_debug.log") {
-                combinedLog += "=== UI Events ===\\n" + uiLog + "\\n"
+            if let uiLog = try? String(contentsOfFile: "/tmp/pixelsquasher_ui_debug.log") {
+                combinedLog += "=== UI Events ===\n" + uiLog + "\n"
             }
             
             // Read conversion debug log
             let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            let debugLogPath = documentsPath.appendingPathComponent("miyoo_debug.log").path
+            let debugLogPath = documentsPath.appendingPathComponent("pixelsquasher_debug.log").path
             if let conversionLog = try? String(contentsOfFile: debugLogPath) {
-                combinedLog += "=== Conversion Log ===\\n" + conversionLog
+                combinedLog += "=== Conversion Log ===\n" + conversionLog
             }
             
             if !combinedLog.isEmpty {
-                // Keep only the last 50 lines to prevent the log from getting too large
-                let lines = combinedLog.components(separatedBy: .newlines)
-                let recentLines = Array(lines.suffix(50))
-                logContent = recentLines.joined(separator: "\\n")
+                // Keep only the last 100 lines to prevent the log from getting too large
+                let lines = combinedLog.components(separatedBy: "\n")
+                let recentLines = Array(lines.suffix(100))
+                let newContent = recentLines.joined(separator: "\n")
+                
+                if newContent != logContent {
+                    logContent = newContent
+                }
             }
         }
     }
 }
+
 
 struct VideoThumbnailView: View {
     let url: URL

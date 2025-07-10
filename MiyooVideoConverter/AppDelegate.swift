@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct MiyooVideoConverterApp: App {
+struct PixelSquasherApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()

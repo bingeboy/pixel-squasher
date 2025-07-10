@@ -6,7 +6,7 @@
 	<integer>11</integer>
 	<key>logs</key>
 	<dict>
-		<key>1F6C8E22-D9C6-4599-9F19-86F114807007</key>
+		<key>61CA06A3-6B33-4678-91DD-81AB28F46369</key>
 		<dict>
 			<key>className</key>
 			<string>IDECommandLineBuildLog</string>
@@ -15,7 +15,7 @@
 			<key>domainType</key>
 			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
 			<key>fileName</key>
-			<string>1F6C8E22-D9C6-4599-9F19-86F114807007.xcactivitylog</string>
+			<string>61CA06A3-6B33-4678-91DD-81AB28F46369.xcactivitylog</string>
 			<key>hasPrimaryLog</key>
 			<true/>
 			<key>primaryObservable</key>
@@ -29,7 +29,7 @@
 				<key>totalNumberOfTestFailures</key>
 				<integer>0</integer>
 				<key>totalNumberOfWarnings</key>
-				<integer>11</integer>
+				<integer>12</integer>
 			</dict>
 			<key>schemeIdentifier-containerName</key>
 			<string>MiyooVideoConverter project</string>
@@ -40,15 +40,15 @@
 			<key>signature</key>
 			<string>Building project MiyooVideoConverter with scheme MiyooVideoConverter and configuration Debug</string>
 			<key>timeStartedRecording</key>
-			<real>773736203.84546006</real>
+			<real>773815109.54247701</real>
 			<key>timeStoppedRecording</key>
-			<real>773736211.08323503</real>
+			<real>773815116.63428199</real>
 			<key>title</key>
 			<string>Building project MiyooVideoConverter with scheme MiyooVideoConverter and configuration Debug</string>
 			<key>uniqueIdentifier</key>
-			<string>1F6C8E22-D9C6-4599-9F19-86F114807007</string>
+			<string>61CA06A3-6B33-4678-91DD-81AB28F46369</string>
 		</dict>
-		<key>D420E12B-4CF7-4FEC-B1B0-FBF112D0804E</key>
+		<key>E6EB2EF6-61DC-462F-B3C3-A3DE104AFA2B</key>
 		<dict>
 			<key>className</key>
 			<string>IDECommandLineBuildLog</string>
@@ -57,7 +57,7 @@
 			<key>domainType</key>
 			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
 			<key>fileName</key>
-			<string>D420E12B-4CF7-4FEC-B1B0-FBF112D0804E.xcactivitylog</string>
+			<string>E6EB2EF6-61DC-462F-B3C3-A3DE104AFA2B.xcactivitylog</string>
 			<key>hasPrimaryLog</key>
 			<true/>
 			<key>primaryObservable</key>
@@ -71,7 +71,7 @@
 				<key>totalNumberOfTestFailures</key>
 				<integer>0</integer>
 				<key>totalNumberOfWarnings</key>
-				<integer>7</integer>
+				<integer>12</integer>
 			</dict>
 			<key>schemeIdentifier-containerName</key>
 			<string>MiyooVideoConverter project</string>
@@ -82,13 +82,13 @@
 			<key>signature</key>
 			<string>Building project MiyooVideoConverter with scheme MiyooVideoConverter and configuration Debug</string>
 			<key>timeStartedRecording</key>
-			<real>773735909.58441103</real>
+			<real>773814862.17627895</real>
 			<key>timeStoppedRecording</key>
-			<real>773735918.51177704</real>
+			<real>773814869.51800096</real>
 			<key>title</key>
 			<string>Building project MiyooVideoConverter with scheme MiyooVideoConverter and configuration Debug</string>
 			<key>uniqueIdentifier</key>
-			<string>D420E12B-4CF7-4FEC-B1B0-FBF112D0804E</string>
+			<string>E6EB2EF6-61DC-462F-B3C3-A3DE104AFA2B</string>
 		</dict>
 	</dict>
 </dict>
