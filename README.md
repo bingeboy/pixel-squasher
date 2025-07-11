@@ -1,4 +1,4 @@
-# Miyoo Mini Plus Video Converter
+# Pixel Squasher
 
 A simple FFmpeg script to convert videos for optimal playback on the Miyoo Mini Plus handheld gaming device.
 
