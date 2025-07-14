@@ -603,4 +603,330 @@ class VideoConverter: ObservableObject {
         
         return totalSeconds > 0 ? totalSeconds : nil
     }
+    
+    // MARK: - YouTube Download Functionality
+    
+    func downloadAndConvertYouTubeVideo(_ url: String, destinationFolder: URL? = nil) {
+        guard !url.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        
+        print("DEBUG: Starting YouTube download for URL: \(url)")
+        
+        isConverting = true
+        progress = 0.0
+        currentFileIndex = 0
+        totalFiles = 1
+        convertedFiles.removeAll()
+        currentProcessingTime = ""
+        totalVideoDuration = ""
+        conversionSpeed = ""
+        statusMessage = "Checking yt-dlp installation..."
+        
+        Task {
+            // Check yt-dlp availability first
+            let ytDlpPath = await findYtDlpPath()
+            if ytDlpPath.isEmpty {
+                DispatchQueue.main.async {
+                    self.statusMessage = "ERROR: yt-dlp not found. Please install with 'brew install yt-dlp'"
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
+                        self.isConverting = false
+                        self.statusMessage = ""
+                    }
+                }
+                return
+            }
+            
+            DispatchQueue.main.async {
+                self.statusMessage = "yt-dlp found at: \(ytDlpPath)"
+            }
+            
+            try? await Task.sleep(nanoseconds: 2_000_000_000) // Wait 2 seconds to show path
+            
+            await downloadYouTubeVideo(url: url, ytDlpPath: ytDlpPath, destinationFolder: destinationFolder)
+            
+            DispatchQueue.main.async {
+                self.currentFile = ""
+                if !self.convertedFiles.isEmpty {
+                    self.statusMessage = "YouTube video downloaded and converted successfully!"
+                } else {
+                    self.statusMessage = "YouTube download failed"
+                }
+                
+                // Keep progress visible for 15 seconds after completion
+                DispatchQueue.main.asyncAfter(deadline: .now() + 15) {
+                    self.isConverting = false
+                    self.statusMessage = ""
+                }
+            }
+        }
+    }
+    
+    private func findYtDlpPath() async -> String {
+        // First try to use bundled yt-dlp if available
+        if let bundledYtDlp = getBundledYtDlpPath() {
+            print("DEBUG: Using bundled yt-dlp at: \(bundledYtDlp)")
+            return bundledYtDlp
+        }
+        
+        // Fallback to system yt-dlp
+        let possiblePaths = [
+            "/usr/local/bin/yt-dlp",
+            "/opt/homebrew/bin/yt-dlp",
+            "/usr/bin/yt-dlp",
+            "/bin/yt-dlp"
+        ]
+        
+        for path in possiblePaths {
+            if FileManager.default.fileExists(atPath: path) {
+                print("DEBUG: Using system yt-dlp at: \(path)")
+                return path
+            }
+        }
+        
+        // Try using 'which' command
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/which")
+        process.arguments = ["yt-dlp"]
+        
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        
+        do {
+            try process.run()
+            process.waitUntilExit()
+            
+            if process.terminationStatus == 0 {
+                let data = pipe.fileHandleForReading.readDataToEndOfFile()
+                if let output = String(data: data, encoding: .utf8) {
+                    let path = output.trimmingCharacters(in: .whitespacesAndNewlines)
+                    print("DEBUG: Found yt-dlp via which: \(path)")
+                    return path
+                }
+            }
+        } catch {
+            print("Error finding yt-dlp: \(error)")
+        }
+        
+        return ""
+    }
+    
+    private func getBundledYtDlpPath() -> String? {
+        // Check if we have a bundled yt-dlp in Resources folder
+        let resourcesPath = Bundle.main.resourcePath ?? ""
+        let bundledYtDlpPath = "\(resourcesPath)/yt-dlp"
+        
+        guard FileManager.default.fileExists(atPath: bundledYtDlpPath) else {
+            print("DEBUG: No bundled yt-dlp found at: \(bundledYtDlpPath)")
+            return nil
+        }
+        
+        // Copy yt-dlp to a writable location in Application Support
+        let appSupportDir = FileManager.default.urls(for: .applicationSupportDirectory, 
+                                                     in: .userDomainMask)[0]
+        let appDir = appSupportDir.appendingPathComponent("PixelSquasher")
+        let workingYtDlpPath = appDir.appendingPathComponent("yt-dlp")
+        
+        do {
+            // Create app directory if it doesn't exist
+            try FileManager.default.createDirectory(at: appDir, 
+                                                   withIntermediateDirectories: true, 
+                                                   attributes: nil)
+            
+            // Check if we already have a working copy
+            if FileManager.default.fileExists(atPath: workingYtDlpPath.path) {
+                let bundledDate = try FileManager.default.attributesOfItem(atPath: bundledYtDlpPath)[.modificationDate] as? Date
+                let workingDate = try FileManager.default.attributesOfItem(atPath: workingYtDlpPath.path)[.modificationDate] as? Date
+                
+                if let bundled = bundledDate, let working = workingDate, working >= bundled {
+                    print("DEBUG: Using existing yt-dlp copy at: \(workingYtDlpPath.path)")
+                    return workingYtDlpPath.path
+                }
+            }
+            
+            // Copy bundled yt-dlp to working location
+            if FileManager.default.fileExists(atPath: workingYtDlpPath.path) {
+                try FileManager.default.removeItem(at: workingYtDlpPath)
+            }
+            
+            try FileManager.default.copyItem(atPath: bundledYtDlpPath, 
+                                           toPath: workingYtDlpPath.path)
+            
+            // Make it executable
+            try FileManager.default.setAttributes([.posixPermissions: 0o755], 
+                                                ofItemAtPath: workingYtDlpPath.path)
+            
+            print("DEBUG: Copied bundled yt-dlp to: \(workingYtDlpPath.path)")
+            return workingYtDlpPath.path
+            
+        } catch {
+            print("DEBUG: Failed to copy bundled yt-dlp: \(error)")
+            return nil
+        }
+    }
+    
+    private func downloadYouTubeVideo(url: String, ytDlpPath: String, destinationFolder: URL? = nil) async {
+        print("DEBUG: Starting YouTube download for: \(url)")
+        
+        // Create temporary directory for download
+        let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("pixelsquasher_youtube")
+        do {
+            try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true, attributes: nil)
+        } catch {
+            DispatchQueue.main.async {
+                self.statusMessage = "ERROR: Failed to create temporary directory"
+            }
+            return
+        }
+        
+        DispatchQueue.main.async {
+            self.currentFile = "Downloading from YouTube..."
+            self.statusMessage = "Downloading video..."
+        }
+        
+        // Log to debug file
+        let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let debugLogPath = documentsPath.appendingPathComponent("pixelsquasher_debug.log").path
+        let debugInfo = "=== YOUTUBE DOWNLOAD START ===\nURL: \(url)\nTemp Dir: \(tempDir.path)\nTime: \(Date())\n"
+        try? debugInfo.appendToFile(atPath: debugLogPath)
+        
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/sh")
+        
+        // Use yt-dlp to download the best video quality up to 1080p
+        let escapedURL = url.replacingOccurrences(of: "'", with: "'\"'\"'")
+        let escapedTempDir = tempDir.path.replacingOccurrences(of: "'", with: "'\"'\"'")
+        
+        let shellCommand = """
+        '\(ytDlpPath)' -f 'best[height<=1080]' -o '\(escapedTempDir)/%(title)s.%(ext)s' '\(escapedURL)'
+        """
+        
+        process.arguments = ["-c", shellCommand]
+        
+        print("DEBUG: yt-dlp command: \(shellCommand)")
+        
+        let outputPipe = Pipe()
+        let errorPipe = Pipe()
+        process.standardOutput = outputPipe
+        process.standardError = errorPipe
+        
+        currentTask = process
+        
+        do {
+            try process.run()
+            print("DEBUG: yt-dlp process started")
+            
+            // Log that process started
+            let startInfo = "yt-dlp process started at: \(Date())\n"
+            try? startInfo.appendToFile(atPath: debugLogPath)
+            
+            // Monitor progress
+            let progressQueue = DispatchQueue(label: "ytdlp-progress")
+            progressQueue.async {
+                let outputHandle = outputPipe.fileHandleForReading
+                let errorHandle = errorPipe.fileHandleForReading
+                
+                while process.isRunning {
+                    let outputData = outputHandle.availableData
+                    let errorData = errorHandle.availableData
+                    
+                    for data in [outputData, errorData] {
+                        if data.count > 0 {
+                            if let output = String(data: data, encoding: .utf8) {
+                                let logEntry = "[\\(Date())] yt-dlp: \\(output)\\n"
+                                try? logEntry.appendToFile(atPath: debugLogPath)
+                                
+                                // Parse download progress
+                                if output.contains("[download]") && output.contains("%") {
+                                    DispatchQueue.main.async {
+                                        self.statusMessage = "Downloading from YouTube..."
+                                        self.progress = 0.3 // Show some progress during download
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    Thread.sleep(forTimeInterval: 0.5)
+                }
+            }
+            
+            process.waitUntilExit()
+            print("DEBUG: yt-dlp process completed with status: \(process.terminationStatus)")
+            
+            let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
+            let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+            let outputText = String(data: outputData, encoding: .utf8) ?? "No output"
+            let errorText = String(data: errorData, encoding: .utf8) ?? "No error output"
+            
+            print("DEBUG: yt-dlp stdout: \(outputText)")
+            print("DEBUG: yt-dlp stderr: \(errorText)")
+            
+            // Write debug result to file
+            let debugResult = """
+            === YOUTUBE DOWNLOAD RESULT ===
+            Exit code: \(process.terminationStatus)
+            yt-dlp stdout: \(outputText)
+            yt-dlp stderr: \(errorText)
+            Time: \(Date())
+            
+            """
+            try? debugResult.appendToFile(atPath: debugLogPath)
+            
+            if process.terminationStatus == 0 {
+                // Download successful, now find the downloaded file and convert it
+                DispatchQueue.main.async {
+                    self.statusMessage = "Download complete, starting conversion..."
+                    self.progress = 0.5
+                }
+                
+                // Find downloaded files
+                do {
+                    let downloadedFiles = try FileManager.default.contentsOfDirectory(at: tempDir, 
+                                                                                     includingPropertiesForKeys: nil, 
+                                                                                     options: [])
+                    let videoFiles = downloadedFiles.filter { url in
+                        let ext = url.pathExtension.lowercased()
+                        return ["mp4", "mkv", "webm", "m4v", "avi", "mov", "flv"].contains(ext)
+                    }
+                    
+                    if let downloadedFile = videoFiles.first {
+                        print("DEBUG: Found downloaded file: \(downloadedFile.path)")
+                        
+                        DispatchQueue.main.async {
+                            self.currentFile = downloadedFile.lastPathComponent
+                        }
+                        
+                        // Convert the downloaded file
+                        await convertVideo(downloadedFile, destinationFolder: destinationFolder)
+                        
+                        // Clean up temporary file
+                        try? FileManager.default.removeItem(at: downloadedFile)
+                    } else {
+                        DispatchQueue.main.async {
+                            self.statusMessage = "ERROR: No video file found after download"
+                        }
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        self.statusMessage = "ERROR: Failed to access downloaded files: \(error.localizedDescription)"
+                    }
+                }
+            } else {
+                DispatchQueue.main.async {
+                    self.statusMessage = "ERROR: YouTube download failed (exit code: \(process.terminationStatus))"
+                }
+                print("ERROR: YouTube download failed with exit code: \(process.terminationStatus)")
+                print("ERROR: yt-dlp error output: \(errorText)")
+            }
+            
+        } catch {
+            DispatchQueue.main.async {
+                self.statusMessage = "ERROR: Failed to run yt-dlp - \(error.localizedDescription)"
+            }
+            print("ERROR: Failed to run yt-dlp: \(error)")
+        }
+        
+        // Clean up temp directory
+        try? FileManager.default.removeItem(at: tempDir)
+        currentTask = nil
+    }
 }

@@ -8,349 +8,172 @@ struct ContentView: View {
     @State private var isDragging = false
     @State private var destinationFolder: URL?
     @State private var showLogTray = false
+    @State private var showSettings = false
+    @State private var selectedTab = 0
+    @State private var youtubeURL = ""
+    @State private var showYouTubeInput = false
     
     var body: some View {
-        VStack(spacing: 20) {
-            Text("PixelSquasher")
-                .font(.title)
-                .fontWeight(.bold)
-                .padding(.top)
-            
-            Text("handheld transcoder")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-            
-            VStack(spacing: 15) {
+        VStack(spacing: 0) {
+            // Toolbar
+            HStack {
+                Text("PixelSquasher")
+                    .font(.headline)
+                    .fontWeight(.semibold)
                 
-                DropZone(
-                    selectedFiles: $selectedFiles,
-                    isDragging: $isDragging
-                )
-                .frame(height: 150)
+                Spacer()
                 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Selected Files (\(selectedFiles.count)):")
-                        .font(.headline)
-                        .foregroundColor(.primary)
-                    
-                    ScrollView {
-                        LazyVStack(alignment: .leading, spacing: 8) {
-                            if selectedFiles.isEmpty {
-                                Text("No files selected")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                    .padding()
-                            } else {
-                                ForEach(Array(selectedFiles.enumerated()), id: \.offset) { index, file in
-                                    HStack(spacing: 12) {
-                                        // Video thumbnail
-                                        VideoThumbnailView(url: file)
-                                            .frame(width: 60, height: 40)
-                                            .cornerRadius(6)
-                                        
-                                        VStack(alignment: .leading, spacing: 2) {
-                                            Text(file.lastPathComponent)
-                                                .font(.caption)
-                                                .fontWeight(.medium)
-                                                .lineLimit(1)
-                                            
-                                            Text(formatFileSize(file))
-                                                .font(.caption2)
-                                                .foregroundColor(.secondary)
-                                        }
-                                        
-                                        Spacer()
-                                        
-                                        if converter.isConverting && index < converter.currentFileIndex {
-                                            Image(systemName: "checkmark.circle.fill")
-                                                .foregroundColor(.green)
-                                                .font(.title2)
-                                        } else if converter.isConverting && index == converter.currentFileIndex {
-                                            VStack(spacing: 4) {
-                                                ProgressView()
-                                                    .scaleEffect(0.7)
-                                                Text("Converting...")
-                                                    .font(.caption2)
-                                                    .foregroundColor(.blue)
-                                            }
-                                        }
-                                    }
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 8)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .fill(index == converter.currentFileIndex && converter.isConverting ? 
-                                                  Color.blue.opacity(0.1) : Color.gray.opacity(0.05))
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: 8)
-                                                    .stroke(index == converter.currentFileIndex && converter.isConverting ? 
-                                                           Color.blue.opacity(0.3) : Color.clear, lineWidth: 2)
-                                                    .scaleEffect(index == converter.currentFileIndex && converter.isConverting ? 1.05 : 1.0)
-                                                    .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), 
-                                                              value: converter.isConverting && index == converter.currentFileIndex)
-                                            )
-                                    )
-                                }
-                            }
-                        }
-                    }
-                    .frame(maxHeight: 120)
-                    .background(Color(NSColor.textBackgroundColor))
-                    .cornerRadius(6)
-                }
-                
-                VStack(spacing: 8) {
-                    HStack(spacing: 12) {
-                        Button("Select Files") {
-                            selectFiles()
-                        }
-                        .buttonStyle(.borderedProminent)
-                        
-                        Button("Clear") {
-                            selectedFiles.removeAll()
-                        }
-                        .buttonStyle(.bordered)
-                        .disabled(selectedFiles.isEmpty || converter.isConverting)
-                        
-                        Spacer()
-                        
-                        Button("Convert All") {
-                            convertVideos()
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .disabled(converter.isConverting || selectedFiles.isEmpty)
-                    }
-                    
-                    HStack(spacing: 12) {
-                        Button("📁 Choose Folder") {
-                            selectDestination()
-                        }
-                        .buttonStyle(.bordered)
-                        
-                        if destinationFolder != nil {
-                            Button("Reset Destination") {
-                                destinationFolder = nil
-                            }
-                            .buttonStyle(.borderless)
-                            .foregroundColor(.red)
-                        }
-                        
-                        Spacer()
-                    }
-                }
-            }
-            .padding()
-            .background(Color(NSColor.controlBackgroundColor))
-            .cornerRadius(10)
-            
-            if let destination = destinationFolder {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Output Destination:")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Text("📁 \(destination.lastPathComponent)")
-                        .font(.subheadline)
-                        .foregroundColor(.blue)
-                        .lineLimit(1)
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 8)
-                .background(Color.blue.opacity(0.1))
-                .cornerRadius(6)
-            }
-            
-            VStack(spacing: 16) {
-                if converter.isConverting {
-                    HStack {
-                        HStack(spacing: 8) {
-                            ProgressView()
-                                .scaleEffect(0.8)
-                            Text("Converting Video")
-                                .font(.headline)
-                                .fontWeight(.semibold)
-                        }
-                        Spacer()
-                        Text("\(Int(converter.progress * 100))%")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .foregroundColor(.blue)
-                    }
-                    
-                    ProgressView(value: converter.progress)
-                        .progressViewStyle(LinearProgressViewStyle(tint: .blue))
-                        .scaleEffect(1.0, anchor: .center)
-                    
-                    // Current file info with enhanced styling
-                    VStack(spacing: 12) {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Current File:")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                Text(converter.currentFile.isEmpty ? "Preparing..." : converter.currentFile)
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                                    .lineLimit(1)
-                            }
-                            Spacer()
-                            VStack(alignment: .trailing, spacing: 4) {
-                                Text("Progress:")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                Text("\(converter.currentFileIndex + 1) of \(selectedFiles.count)")
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                            }
-                        }
-                        
-                        // Processing animation
-                        HStack {
-                            ForEach(0..<3) { index in
-                                Circle()
-                                    .fill(Color.blue)
-                                    .frame(width: 8, height: 8)
-                                    .scaleEffect(converter.isConverting ? 1.0 : 0.5)
-                                    .animation(.easeInOut(duration: 0.6).repeatForever().delay(Double(index) * 0.2), value: converter.isConverting)
-                            }
-                            Text("Processing...")
-                                .font(.caption)
-                                .foregroundColor(.blue)
-                                .fontWeight(.medium)
-                            Spacer()
-                        }
-                    }
-                    
-                    // Timing information
-                    if !converter.currentProcessingTime.isEmpty || !converter.totalVideoDuration.isEmpty {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Time Progress:")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                Text("\(converter.currentProcessingTime) / \(converter.totalVideoDuration)")
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                                    .foregroundColor(.blue)
-                            }
-                            Spacer()
-                            if !converter.conversionSpeed.isEmpty {
-                                VStack(alignment: .trailing, spacing: 4) {
-                                    Text("Speed:")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                    Text("\(converter.conversionSpeed)")
-                                        .font(.subheadline)
-                                        .fontWeight(.medium)
-                                        .foregroundColor(.green)
-                                }
-                            }
-                        }
-                    }
-                    
-                    if converter.currentFileIndex > 0 || !converter.convertedFiles.isEmpty {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Status:")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                Text(converter.statusMessage)
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                                    .foregroundColor(.green)
-                            }
-                            Spacer()
-                            Button("Cancel") {
-                                converter.cancelConversion()
-                            }
-                            .buttonStyle(.bordered)
-                            .foregroundColor(.red)
-                        }
-                    }
-                } else {
-                    VStack(spacing: 16) {
-                        HStack {
-                            Text("Ready to convert")
-                                .font(.headline)
-                                .foregroundColor(.secondary)
-                            Spacer()
-                        }
-                        
-                        ProgressView(value: 0.0)
-                            .progressViewStyle(LinearProgressViewStyle(tint: .gray))
-                    }
-                    .padding()
-                }
-            }
-            .padding()
-            .background(Color(NSColor.controlBackgroundColor))
-            .cornerRadius(8)
-            
-            // Converted Files - now full width
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    Text("Converted Files (\(converter.convertedFiles.count)):")
-                        .font(.headline)
-                    
-                    Spacer()
-                    
-                    Button(action: {
-                        withAnimation(.easeInOut(duration: 0.3)) {
-                            showLogTray.toggle()
-                        }
-                    }) {
+                // Main toolbar buttons
+                HStack(spacing: 8) {
+                    Button(action: { selectFiles() }) {
                         HStack(spacing: 4) {
-                            Image(systemName: showLogTray ? "sidebar.right" : "sidebar.left")
-                            Text(showLogTray ? "Hide Log" : "Show Log")
+                            Image(systemName: "plus")
+                            Text("Add Files")
                         }
-                        .font(.caption)
+                    }
+                    .buttonStyle(.bordered)
+                    
+                    Button(action: { showYouTubeInput.toggle() }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "globe")
+                            Text("YouTube")
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                    
+                    Button(action: { selectDestination() }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "folder")
+                            Text("Output")
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                    
+                    Button(action: { convertVideos() }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "play.fill")
+                            Text("Convert")
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(converter.isConverting || selectedFiles.isEmpty)
+                    
+                    Divider()
+                        .frame(height: 20)
+                    
+                    Button(action: { showSettings.toggle() }) {
+                        Image(systemName: "gearshape")
+                    }
+                    .buttonStyle(.bordered)
+                    
+                    Button(action: { showLogTray.toggle() }) {
+                        Image(systemName: "list.bullet.rectangle")
                     }
                     .buttonStyle(.bordered)
                 }
-                
-                ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 5) {
-                        if converter.convertedFiles.isEmpty {
-                            Text("No files converted yet")
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+            .background(Color(NSColor.controlBackgroundColor))
+            
+            Divider()
+            
+            // Main content area
+            HSplitView {
+                // Left panel - File management
+                VStack(spacing: 0) {
+                    // Tab bar
+                    HStack(spacing: 0) {
+                        Button(action: { selectedTab = 0 }) {
+                            Text("Input Files")
                                 .font(.caption)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                        }
+                        .buttonStyle(.borderless)
+                        .background(selectedTab == 0 ? Color.accentColor.opacity(0.2) : Color.clear)
+                        
+                        Button(action: { selectedTab = 1 }) {
+                            Text("Output Files")
+                                .font(.caption)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                        }
+                        .buttonStyle(.borderless)
+                        .background(selectedTab == 1 ? Color.accentColor.opacity(0.2) : Color.clear)
+                        
+                        Spacer()
+                        
+                        if selectedTab == 0 {
+                            Text("\(selectedFiles.count) files")
+                                .font(.caption2)
                                 .foregroundColor(.secondary)
-                                .padding()
                         } else {
-                            ForEach(converter.convertedFiles, id: \.self) { file in
-                                HStack {
-                                    Text(file.lastPathComponent)
-                                        .font(.caption)
-                                    Spacer()
-                                    Button("Show in Finder") {
-                                        NSWorkspace.shared.selectFile(file.path, inFileViewerRootedAtPath: "")
-                                    }
-                                    .buttonStyle(.borderless)
-                                    .font(.caption)
-                                }
-                            }
+                            Text("\(converter.convertedFiles.count) files")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
                         }
                     }
+                    .padding(.horizontal, 8)
+                    .background(Color(NSColor.controlBackgroundColor))
+                    
+                    Divider()
+                    
+                    // Content based on selected tab
+                    if selectedTab == 0 {
+                        FileListView(files: $selectedFiles, 
+                                   converter: converter, 
+                                   isDragging: $isDragging)
+                    } else {
+                        OutputListView(files: converter.convertedFiles)
+                    }
                 }
-                .frame(maxHeight: 120)
+                .frame(minWidth: 300)
+                
+                // Right panel - Status and controls
+                VStack(spacing: 0) {
+                    // Status area
+                    StatusView(converter: converter, 
+                             selectedFiles: selectedFiles,
+                             destinationFolder: destinationFolder)
+                    
+                    if showSettings {
+                        Divider()
+                        SettingsPanel()
+                            .frame(maxHeight: 200)
+                    }
+                }
+                .frame(minWidth: 250)
             }
-            .padding()
-            .background(Color(NSColor.controlBackgroundColor))
-            .cornerRadius(8)
-            
-            Spacer()
         }
-        .padding()
-        .frame(minWidth: 900, maxWidth: showLogTray ? 1400 : 1200, minHeight: 700, maxHeight: 1000)
+        .frame(minWidth: 800, maxWidth: showLogTray ? 1200 : 1000, 
+               minHeight: 500, maxHeight: 800)
         .overlay(
             // Log Tray
             HStack {
                 Spacer()
                 if showLogTray {
                     LogTrayView(showLogTray: $showLogTray)
-                        .frame(width: 350)
+                        .frame(width: 300)
                         .transition(.move(edge: .trailing))
                 }
             },
             alignment: .trailing
+        )
+        .overlay(
+            // YouTube URL Input Modal
+            Group {
+                if showYouTubeInput {
+                    YouTubeInputView(
+                        showYouTubeInput: $showYouTubeInput,
+                        youtubeURL: $youtubeURL,
+                        onDownload: { url in
+                            downloadYouTubeVideo(url)
+                        }
+                    )
+                    .transition(.scale.combined(with: .opacity))
+                }
+            }
         )
         .onAppear {
             print("DEBUG: ContentView appeared")
@@ -402,6 +225,10 @@ struct ContentView: View {
         converter.convertVideos(selectedFiles, destinationFolder: destinationFolder)
     }
     
+    private func downloadYouTubeVideo(_ url: String) {
+        converter.downloadAndConvertYouTubeVideo(url, destinationFolder: destinationFolder)
+    }
+    
     private func formatFileSize(_ fileURL: URL) -> String {
         guard let attributes = try? FileManager.default.attributesOfItem(atPath: fileURL.path),
               let fileSize = attributes[.size] as? Int64 else {
@@ -411,6 +238,440 @@ struct ContentView: View {
         let formatter = ByteCountFormatter()
         formatter.countStyle = .file
         return formatter.string(fromByteCount: fileSize)
+    }
+}
+
+// MARK: - Functional UI Components
+
+struct FileListView: View {
+    @Binding var files: [URL]
+    let converter: VideoConverter
+    @Binding var isDragging: Bool
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            if files.isEmpty {
+                DropZoneCompact(selectedFiles: $files, isDragging: $isDragging)
+                    .frame(maxHeight: .infinity)
+            } else {
+                List {
+                    ForEach(Array(files.enumerated()), id: \.offset) { index, file in
+                        FileRowView(file: file, 
+                                  index: index, 
+                                  converter: converter,
+                                  onRemove: {
+                                      files.remove(at: index)
+                                  })
+                    }
+                }
+                .listStyle(PlainListStyle())
+            }
+        }
+    }
+}
+
+struct FileRowView: View {
+    let file: URL
+    let index: Int
+    let converter: VideoConverter
+    let onRemove: () -> Void
+    
+    var body: some View {
+        HStack(spacing: 8) {
+            VideoThumbnailView(url: file)
+                .frame(width: 32, height: 20)
+                .cornerRadius(2)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(file.lastPathComponent)
+                    .font(.caption)
+                    .lineLimit(1)
+                
+                Text(formatFileSize(file))
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+            
+            Spacer()
+            
+            // Status indicator
+            Group {
+                if converter.isConverting && index < converter.currentFileIndex {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                        .font(.caption)
+                } else if converter.isConverting && index == converter.currentFileIndex {
+                    ProgressView()
+                        .scaleEffect(0.5)
+                } else {
+                    Button(action: onRemove) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.red)
+                            .font(.caption)
+                    }
+                    .buttonStyle(.borderless)
+                }
+            }
+        }
+        .padding(.vertical, 2)
+        .background(index == converter.currentFileIndex && converter.isConverting ? 
+                   Color.accentColor.opacity(0.1) : Color.clear)
+    }
+    
+    private func formatFileSize(_ fileURL: URL) -> String {
+        guard let attributes = try? FileManager.default.attributesOfItem(atPath: fileURL.path),
+              let fileSize = attributes[.size] as? Int64 else {
+            return "Unknown"
+        }
+        
+        let formatter = ByteCountFormatter()
+        formatter.countStyle = .file
+        return formatter.string(fromByteCount: fileSize)
+    }
+}
+
+struct OutputListView: View {
+    let files: [URL]
+    
+    var body: some View {
+        if files.isEmpty {
+            VStack {
+                Image(systemName: "tray")
+                    .font(.largeTitle)
+                    .foregroundColor(.secondary)
+                Text("No converted files yet")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else {
+            List(files, id: \.self) { file in
+                HStack {
+                    Image(systemName: "doc.circle.fill")
+                        .foregroundColor(.green)
+                        .font(.caption)
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(file.lastPathComponent)
+                            .font(.caption)
+                            .lineLimit(1)
+                        
+                        Text(file.path)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    }
+                    
+                    Spacer()
+                    
+                    Button(action: {
+                        NSWorkspace.shared.selectFile(file.path, inFileViewerRootedAtPath: "")
+                    }) {
+                        Image(systemName: "folder")
+                            .font(.caption)
+                    }
+                    .buttonStyle(.borderless)
+                }
+                .padding(.vertical, 2)
+            }
+            .listStyle(PlainListStyle())
+        }
+    }
+}
+
+struct StatusView: View {
+    let converter: VideoConverter
+    let selectedFiles: [URL]
+    let destinationFolder: URL?
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            // Destination info
+            if let destination = destinationFolder {
+                HStack {
+                    Text("Output:")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    Text(destination.lastPathComponent)
+                        .font(.caption2)
+                        .lineLimit(1)
+                    Spacer()
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.accentColor.opacity(0.1))
+            }
+            
+            // Progress section
+            if converter.isConverting {
+                VStack(spacing: 6) {
+                    HStack {
+                        Text("Converting")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                        Spacer()
+                        Text("\(Int(converter.progress * 100))%")
+                            .font(.caption)
+                            .fontWeight(.bold)
+                    }
+                    
+                    ProgressView(value: converter.progress)
+                        .progressViewStyle(LinearProgressViewStyle())
+                    
+                    if !converter.currentFile.isEmpty {
+                        HStack {
+                            Text("File:")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                            Text(converter.currentFile)
+                                .font(.caption2)
+                                .lineLimit(1)
+                            Spacer()
+                        }
+                    }
+                    
+                    HStack {
+                        Text("\(converter.currentFileIndex + 1) of \(selectedFiles.count)")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        if !converter.conversionSpeed.isEmpty {
+                            Text(converter.conversionSpeed)
+                                .font(.caption2)
+                                .foregroundColor(.green)
+                        }
+                    }
+                    
+                    if converter.currentFileIndex > 0 || !converter.convertedFiles.isEmpty {
+                        Button("Cancel") {
+                            converter.cancelConversion()
+                        }
+                        .buttonStyle(.bordered)
+                        .font(.caption)
+                    }
+                }
+                .padding(8)
+                .background(Color(NSColor.controlBackgroundColor))
+                .cornerRadius(6)
+            } else {
+                VStack(spacing: 4) {
+                    Text("Ready")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    ProgressView(value: 0.0)
+                        .progressViewStyle(LinearProgressViewStyle())
+                }
+                .padding(8)
+                .background(Color(NSColor.controlBackgroundColor))
+                .cornerRadius(6)
+            }
+            
+            // Status message
+            if !converter.statusMessage.isEmpty {
+                Text(converter.statusMessage)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(2)
+                    .padding(.horizontal, 8)
+            }
+            
+            Spacer()
+        }
+        .padding(8)
+    }
+}
+
+struct SettingsPanel: View {
+    @State private var videoQuality = "800k"
+    @State private var audioQuality = "64k"
+    @State private var outputFormat = "mp4"
+    @State private var customWidth = "480"
+    @State private var customHeight = "320"
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text("Conversion Settings")
+                    .font(.caption)
+                    .fontWeight(.medium)
+                Spacer()
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(Color(NSColor.controlBackgroundColor))
+            
+            Divider()
+            
+            ScrollView {
+                VStack(spacing: 8) {
+                    SettingRow(title: "Video Quality", 
+                             value: $videoQuality,
+                             options: ["400k", "800k", "1200k", "1600k"])
+                    
+                    SettingRow(title: "Audio Quality", 
+                             value: $audioQuality,
+                             options: ["32k", "64k", "128k", "192k"])
+                    
+                    SettingRow(title: "Format", 
+                             value: $outputFormat,
+                             options: ["mp4", "mkv", "avi"])
+                    
+                    HStack {
+                        Text("Resolution:")
+                            .font(.caption2)
+                            .frame(width: 70, alignment: .leading)
+                        
+                        TextField("", text: $customWidth)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 50)
+                        
+                        Text("×")
+                            .font(.caption2)
+                        
+                        TextField("", text: $customHeight)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 50)
+                        
+                        Spacer()
+                    }
+                }
+                .padding(8)
+            }
+        }
+    }
+}
+
+struct SettingRow: View {
+    let title: String
+    @Binding var value: String
+    let options: [String]
+    
+    var body: some View {
+        HStack {
+            Text("\(title):")
+                .font(.caption2)
+                .frame(width: 70, alignment: .leading)
+            
+            Picker("", selection: $value) {
+                ForEach(options, id: \.self) { option in
+                    Text(option).tag(option)
+                }
+            }
+            .pickerStyle(.menu)
+            .frame(width: 80)
+            
+            Spacer()
+        }
+    }
+}
+
+struct DropZoneCompact: View {
+    @Binding var selectedFiles: [URL]
+    @Binding var isDragging: Bool
+    
+    var body: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "plus.rectangle.on.folder")
+                .font(.system(size: 32))
+                .foregroundColor(.secondary)
+            
+            Text("Drop files here or use Add Files button")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(isDragging ? Color.accentColor.opacity(0.2) : Color.gray.opacity(0.05))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(isDragging ? Color.accentColor : Color.gray.opacity(0.3), 
+                       style: StrokeStyle(lineWidth: 2, dash: [8]))
+        )
+        .onDrop(of: [.fileURL], isTargeted: $isDragging) { providers in
+            handleDrop(providers: providers)
+        }
+    }
+    
+    private func handleDrop(providers: [NSItemProvider]) -> Bool {
+        var urls: [URL] = []
+        let group = DispatchGroup()
+        
+        for provider in providers {
+            if provider.canLoadObject(ofClass: URL.self) {
+                group.enter()
+                _ = provider.loadObject(ofClass: URL.self) { url, error in
+                    if let url = url, url.hasDirectoryPath == false {
+                        let pathExtension = url.pathExtension.lowercased()
+                        if ["mp4", "mov", "avi", "mkv", "m4v", "wmv", "flv", "webm"].contains(pathExtension) {
+                            urls.append(url)
+                        }
+                    }
+                    group.leave()
+                }
+            }
+        }
+        
+        group.notify(queue: .main) {
+            selectedFiles.append(contentsOf: urls)
+        }
+        
+        return true
+    }
+}
+
+struct YouTubeInputView: View {
+    @Binding var showYouTubeInput: Bool
+    @Binding var youtubeURL: String
+    let onDownload: (String) -> Void
+    
+    var body: some View {
+        ZStack {
+            // Background overlay
+            Color.black.opacity(0.3)
+                .ignoresSafeArea()
+                .onTapGesture {
+                    showYouTubeInput = false
+                }
+            
+            // Modal content
+            VStack(spacing: 16) {
+                Text("Download from YouTube")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                
+                Text("Enter a YouTube URL to download and convert")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                TextField("https://youtube.com/watch?v=...", text: $youtubeURL)
+                    .textFieldStyle(.roundedBorder)
+                    .frame(width: 400)
+                
+                HStack(spacing: 12) {
+                    Button("Cancel") {
+                        showYouTubeInput = false
+                        youtubeURL = ""
+                    }
+                    .buttonStyle(.bordered)
+                    
+                    Button("Download & Convert") {
+                        if !youtubeURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            onDownload(youtubeURL)
+                            showYouTubeInput = false
+                            youtubeURL = ""
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(youtubeURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            }
+            .padding(24)
+            .background(Color(NSColor.windowBackgroundColor))
+            .cornerRadius(12)
+            .shadow(radius: 10)
+        }
     }
 }
 
