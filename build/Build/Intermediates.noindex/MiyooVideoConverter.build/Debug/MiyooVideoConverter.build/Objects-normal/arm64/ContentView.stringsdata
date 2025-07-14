@@ -1,0 +1,156 @@
+{
+  "source": "/Users/bubblegum/Developer/miyoo-video-converter/MiyooVideoConverter/ContentView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "PixelSquasher"
+      },
+      {
+        "comment": "",
+        "key": "handheld transcoder"
+      },
+      {
+        "comment": "",
+        "key": "Selected Files (%lld):"
+      },
+      {
+        "comment": "",
+        "key": "No files selected"
+      },
+      {
+        "comment": "",
+        "key": "Converting..."
+      },
+      {
+        "comment": "",
+        "key": "Select Files"
+      },
+      {
+        "comment": "",
+        "key": "Clear"
+      },
+      {
+        "comment": "",
+        "key": "Convert All"
+      },
+      {
+        "comment": "",
+        "key": "📁 Choose Folder"
+      },
+      {
+        "comment": "",
+        "key": "Reset Destination"
+      },
+      {
+        "comment": "",
+        "key": "Output Destination:"
+      },
+      {
+        "comment": "",
+        "key": "📁 %@"
+      },
+      {
+        "comment": "",
+        "key": "%lld%%"
+      },
+      {
+        "comment": "",
+        "key": "Converting Video"
+      },
+      {
+        "comment": "",
+        "key": "Current File:"
+      },
+      {
+        "comment": "",
+        "key": "Progress:"
+      },
+      {
+        "comment": "",
+        "key": "%lld of %lld"
+      },
+      {
+        "comment": "",
+        "key": "Processing..."
+      },
+      {
+        "comment": "",
+        "key": "Time Progress:"
+      },
+      {
+        "comment": "",
+        "key": "%@ / %@"
+      },
+      {
+        "comment": "",
+        "key": "Speed:"
+      },
+      {
+        "comment": "",
+        "key": "%@"
+      },
+      {
+        "comment": "",
+        "key": "Cancel"
+      },
+      {
+        "comment": "",
+        "key": "Status:"
+      },
+      {
+        "comment": "",
+        "key": "Ready to convert"
+      },
+      {
+        "comment": "",
+        "key": "Converted Files (%lld):"
+      },
+      {
+        "comment": "",
+        "key": "Hide Log"
+      },
+      {
+        "comment": "",
+        "key": "Show Log"
+      },
+      {
+        "comment": "",
+        "key": "No files converted yet"
+      },
+      {
+        "comment": "",
+        "key": "Show in Finder"
+      },
+      {
+        "comment": "",
+        "key": "Conversion Log"
+      },
+      {
+        "comment": "",
+        "key": "Copy log to clipboard"
+      },
+      {
+        "comment": "",
+        "key": "Clear log"
+      },
+      {
+        "comment": "",
+        "key": "Close log"
+      },
+      {
+        "comment": "",
+        "key": "No log data yet..."
+      },
+      {
+        "comment": "",
+        "key": "Drop video files here or click 'Select Files'"
+      },
+      {
+        "comment": "",
+        "key": "%lld file(s) selected"
+      }
+    ]
+  },
+  "version": 1
+}

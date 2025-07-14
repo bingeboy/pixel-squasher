@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>logFormatVersion</key>
+	<integer>11</integer>
+	<key>logs</key>
+	<dict>
+		<key>61CA06A3-6B33-4678-91DD-81AB28F46369</key>
+		<dict>
+			<key>className</key>
+			<string>IDECommandLineBuildLog</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>61CA06A3-6B33-4678-91DD-81AB28F46369.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>W</string>
+				<key>totalNumberOfAnalyzerIssues</key>
+				<integer>0</integer>
+				<key>totalNumberOfErrors</key>
+				<integer>0</integer>
+				<key>totalNumberOfTestFailures</key>
+				<integer>0</integer>
+				<key>totalNumberOfWarnings</key>
+				<integer>12</integer>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>MiyooVideoConverter project</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>MiyooVideoConverter</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>1</integer>
+			<key>signature</key>
+			<string>Building project MiyooVideoConverter with scheme MiyooVideoConverter and configuration Debug</string>
+			<key>timeStartedRecording</key>
+			<real>773815109.54247701</real>
+			<key>timeStoppedRecording</key>
+			<real>773815116.63428199</real>
+			<key>title</key>
+			<string>Building project MiyooVideoConverter with scheme MiyooVideoConverter and configuration Debug</string>
+			<key>uniqueIdentifier</key>
+			<string>61CA06A3-6B33-4678-91DD-81AB28F46369</string>
+		</dict>
+		<key>E6EB2EF6-61DC-462F-B3C3-A3DE104AFA2B</key>
+		<dict>
+			<key>className</key>
+			<string>IDECommandLineBuildLog</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>E6EB2EF6-61DC-462F-B3C3-A3DE104AFA2B.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>W</string>
+				<key>totalNumberOfAnalyzerIssues</key>
+				<integer>0</integer>
+				<key>totalNumberOfErrors</key>
+				<integer>0</integer>
+				<key>totalNumberOfTestFailures</key>
+				<integer>0</integer>
+				<key>totalNumberOfWarnings</key>
+				<integer>12</integer>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>MiyooVideoConverter project</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>MiyooVideoConverter</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>1</integer>
+			<key>signature</key>
+			<string>Building project MiyooVideoConverter with scheme MiyooVideoConverter and configuration Debug</string>
+			<key>timeStartedRecording</key>
+			<real>773814862.17627895</real>
+			<key>timeStoppedRecording</key>
+			<real>773814869.51800096</real>
+			<key>title</key>
+			<string>Building project MiyooVideoConverter with scheme MiyooVideoConverter and configuration Debug</string>
+			<key>uniqueIdentifier</key>
+			<string>E6EB2EF6-61DC-462F-B3C3-A3DE104AFA2B</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

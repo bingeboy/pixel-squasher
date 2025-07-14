@@ -1,0 +1,48 @@
+{
+  "" : {
+    "diagnostics" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/MiyooVideoConverter-master.dia",
+    "emit-module-dependencies" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/MiyooVideoConverter-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/MiyooVideoConverter-master-emit-module.dia",
+    "swift-dependencies" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/MiyooVideoConverter-master.swiftdeps"
+  },
+  "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/GeneratedAssetSymbols.dia",
+    "index-unit-output-path" : "/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftdeps",
+    "swiftmodule" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/GeneratedAssetSymbols~partial.swiftmodule"
+  },
+  "/Users/bubblegum/Developer/miyoo-video-converter/MiyooVideoConverter/AppDelegate.swift" : {
+    "const-values" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/AppDelegate.swiftconstvalues",
+    "dependencies" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/AppDelegate.d",
+    "diagnostics" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/AppDelegate.dia",
+    "index-unit-output-path" : "/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/AppDelegate.o",
+    "llvm-bc" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/AppDelegate.bc",
+    "object" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/AppDelegate.o",
+    "swift-dependencies" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/AppDelegate.swiftdeps",
+    "swiftmodule" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/AppDelegate~partial.swiftmodule"
+  },
+  "/Users/bubblegum/Developer/miyoo-video-converter/MiyooVideoConverter/ContentView.swift" : {
+    "const-values" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/ContentView.swiftconstvalues",
+    "dependencies" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/ContentView.d",
+    "diagnostics" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/ContentView.dia",
+    "index-unit-output-path" : "/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/ContentView.o",
+    "swift-dependencies" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/ContentView.swiftdeps",
+    "swiftmodule" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/ContentView~partial.swiftmodule"
+  },
+  "/Users/bubblegum/Developer/miyoo-video-converter/MiyooVideoConverter/VideoConverter.swift" : {
+    "const-values" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/VideoConverter.swiftconstvalues",
+    "dependencies" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/VideoConverter.d",
+    "diagnostics" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/VideoConverter.dia",
+    "index-unit-output-path" : "/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/VideoConverter.o",
+    "llvm-bc" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/VideoConverter.bc",
+    "object" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/VideoConverter.o",
+    "swift-dependencies" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/VideoConverter.swiftdeps",
+    "swiftmodule" : "/Users/bubblegum/Developer/miyoo-video-converter/build/MiyooVideoConverter.build/Debug/MiyooVideoConverter.build/Objects-normal/arm64/VideoConverter~partial.swiftmodule"
+  }
+}
